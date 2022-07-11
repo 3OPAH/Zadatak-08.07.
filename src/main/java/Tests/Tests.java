@@ -48,9 +48,9 @@ public class Tests extends BaseTest{
         cartPage.openPage();
         cartItems = cartPage.getItemsFromCart();
 
-        Assert.assertEquals(cartPage.validateAddedProducts(cartItems, addedProducts), true);
+        Assert.assertEquals(cartPage.verifyAddedProducts(cartItems, addedProducts), true);
 
-        System.out.println(productName + ", cena = " + price);
+        System.out.println("Added product : " + productName + ", cena = " + price);
         System.out.println("Total price = " + totalPrice);
     }
 
@@ -72,17 +72,20 @@ public class Tests extends BaseTest{
 
         double removedProductPrice = cartPage.removeProduct(productName);
 
-        totalPrice = totalPrice - removedProductPrice;
 
-        int cartSize = cartItems.size();
+        HashMap<String, Integer> cartItemsAfter = cartPage.getItemsFromCart();
 
-        if (cartItems.containsKey(productName) && cartItems.get(productName) == 1) {
-            cartItems.remove(productName);
-        }else if (cartItems.get(productName) > 0){
-            cartItems.put(productName, cartItems.get(productName) - 1);
+        if (!cartItemsAfter.containsKey(productName) || cartItemsAfter.isEmpty()) {
+            totalPrice = totalPrice - removedProductPrice;
+
+            if (cartItems.containsKey(productName) && cartItems.get(productName) == 1) {
+                cartItems.remove(productName);
+            }else if (cartItems.get(productName) > 1){
+                cartItems.put(productName, cartItems.get(productName) - 1);
+            }
         }
 
-        Assert.assertEquals(cartItems.size() == cartSize - 1, true);
+        Assert.assertEquals(cartPage.verifyRemoveProductFromCart(productName), true);
     }
 
 }

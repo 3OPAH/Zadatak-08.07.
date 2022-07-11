@@ -1,8 +1,6 @@
 package Pages;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -28,9 +26,18 @@ public class CartPage extends BasePage{
     public HashMap<String, Integer> getItemsFromCart (){
         HashMap<String, Integer> cartItems = new HashMap<>();
         List<String> header = new ArrayList<>();
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(60));
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
 
-        wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.className("success")));
+        driver.navigate().refresh();
+
+        try {
+            wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.className("success")));
+        }
+        catch (TimeoutException e){
+            System.out.println("Cart is empty");
+            return cartItems;
+        }
+
         WebElement cartTable = driver.findElement(By.xpath("//table[@class='table table-bordered table-hover table-striped']"));
 
         List<WebElement> headerSpan = cartTable.findElements(By.xpath(".//th"));
@@ -47,7 +54,6 @@ public class CartPage extends BasePage{
             List<WebElement> cells = rows.get(i).findElements(By.xpath(".//td"));
 
             for(int j = 0; j < cells.size(); j++) {
-                System.out.println(header.get(j) + " : " + cells.get(j).getText());
                 if (header.get(j).equals("Title") && cartItems.containsKey(cells.get(j).getText())){
                     int tempCount = cartItems.get(cells.get(j).getText());
                     cartItems.put(cells.get(j).getText(), tempCount + 1);
@@ -63,11 +69,13 @@ public class CartPage extends BasePage{
         return cartItems;
     }
 
-    public boolean validateAddedProducts (HashMap<String, Integer> cartItems, List <String> addedProducts) {
+    public boolean verifyAddedProducts(HashMap<String, Integer> cartItems, List <String> addedProducts) {
         boolean correctlyAdded = false;
 
         for (int i = 0; i < addedProducts.size(); i++) {
             if (!cartItems.containsKey(addedProducts.get(i))) {
+                correctlyAdded = false;
+            } else if (cartItems.get(addedProducts.get(i)) != 1){
                 correctlyAdded = false;
             } else {
                 correctlyAdded = true;
@@ -76,13 +84,20 @@ public class CartPage extends BasePage{
         return correctlyAdded;
     }
 
-    public double getTotalPrice () {
+    public double getTotalPrice () throws InterruptedException {
         double price;
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(60));
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
 
-        wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.className("success")));
+        //Thread.sleep(2000);
 
-        if(driver.findElement(By.id("totalp")).getText() != null && driver.findElement(By.id("totalp")).getText().length() > 0) {
+        try {
+            wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.className("success")));
+        }
+        catch (TimeoutException e){
+            System.out.println("Cart is empty");
+        }
+
+        if(driver.findElement(By.id("totalp")).getText().length() > 0) {
             price = Double.parseDouble(driver.findElement(By.id("totalp")).getText());
         }else{
             price = 0;
@@ -128,6 +143,19 @@ public class CartPage extends BasePage{
         }
 
         return removedProductPrice;
+    }
+
+    public boolean verifyRemoveProductFromCart (String productName){
+        boolean correctlyRemoved;
+        HashMap<String, Integer> cartItems = this.getItemsFromCart();
+
+        if (!cartItems.containsKey(productName) || cartItems.isEmpty()){
+            correctlyRemoved = true;
+        }else {
+            correctlyRemoved = false;
+        }
+
+        return correctlyRemoved;
     }
 
 }
