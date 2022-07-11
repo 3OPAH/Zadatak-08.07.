@@ -12,14 +12,10 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class Tests extends BaseTest{
     private double totalPrice;
-    private List <String> addedProducts = new ArrayList<>();
-    private HashMap<String, Integer> cartItems = new HashMap<>();
 
     @Test(dataProvider = "ProductsProvider", dataProviderClass = ProductsProvider.class)
     public void verifyAddProduct (String productName) throws InterruptedException {
@@ -31,7 +27,6 @@ public class Tests extends BaseTest{
 
 
         WebElement product = homePage.getProduct(productName);
-        addedProducts.add(product.findElement(By.xpath(".//a[@class='hrefch']")).getText());
         double price = Double.parseDouble(product.findElement(By.xpath(".//h5")).getText().substring(1));
         totalPrice = totalPrice + price;
         product.findElement(By.xpath(".//a")).click();
@@ -46,9 +41,8 @@ public class Tests extends BaseTest{
 
         CartPage cartPage = new CartPage(driver);
         cartPage.openPage();
-        cartItems = cartPage.getItemsFromCart();
 
-        Assert.assertEquals(cartPage.verifyAddedProducts(cartItems, addedProducts), true);
+        Assert.assertEquals(cartPage.verifyAddedProducts(productName), true);
 
         System.out.println("Added product : " + productName + ", cena = " + price);
         System.out.println("Total price = " + totalPrice);
@@ -77,15 +71,12 @@ public class Tests extends BaseTest{
 
         if (!cartItemsAfter.containsKey(productName) || cartItemsAfter.isEmpty()) {
             totalPrice = totalPrice - removedProductPrice;
-
-            if (cartItems.containsKey(productName) && cartItems.get(productName) == 1) {
-                cartItems.remove(productName);
-            }else if (cartItems.get(productName) > 1){
-                cartItems.put(productName, cartItems.get(productName) - 1);
-            }
         }
 
         Assert.assertEquals(cartPage.verifyRemoveProductFromCart(productName), true);
+
+        System.out.println("Removed product : " + productName + ", cena = " + removedProductPrice);
+        System.out.println("Total price = " + totalPrice);
     }
 
 }

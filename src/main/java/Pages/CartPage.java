@@ -69,18 +69,18 @@ public class CartPage extends BasePage{
         return cartItems;
     }
 
-    public boolean verifyAddedProducts(HashMap<String, Integer> cartItems, List <String> addedProducts) {
-        boolean correctlyAdded = false;
+    public boolean verifyAddedProducts(String productName) {
+        boolean correctlyAdded;
+        HashMap<String, Integer> cartItems = this.getItemsFromCart();
 
-        for (int i = 0; i < addedProducts.size(); i++) {
-            if (!cartItems.containsKey(addedProducts.get(i))) {
-                correctlyAdded = false;
-            } else if (cartItems.get(addedProducts.get(i)) != 1){
-                correctlyAdded = false;
-            } else {
-                correctlyAdded = true;
-            }
+        if (!cartItems.containsKey(productName)) {
+            correctlyAdded = false;
+        } else if (cartItems.get(productName) != 1){
+            correctlyAdded = false;
+        } else {
+            correctlyAdded = true;
         }
+
         return correctlyAdded;
     }
 
